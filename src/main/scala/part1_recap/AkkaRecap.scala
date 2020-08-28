@@ -31,7 +31,7 @@ object AkkaRecap extends App {
 
     override def supervisorStrategy: SupervisorStrategy = OneForOneStrategy() {
       case _: RuntimeException => Restart
-      case _: => Stop
+      case _ => Stop
     }
   }
 
