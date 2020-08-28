@@ -1,11 +1,17 @@
 package part1_recap
 
-import akka.actor.{Actor, ActorSystem, Props}
+import akka.actor.{Actor, ActorSystem, Props, Stash}
 
 object AkkaRecap extends App {
 
-  class SimpleActor extends Actor {
+  class SimpleActor extends Actor with Stash {
     def receive: Receive = {
+          // STASHING
+      case "stashThis" =>
+        stash()
+      case "change handler NOW" =>
+        unstashAll()
+        context.become(anotherHandler)
       case "change" => context.become(anotherHandler)
       case message => println(s"I have received: $message")
     }
