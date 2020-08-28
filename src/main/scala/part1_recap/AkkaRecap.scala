@@ -56,6 +56,10 @@ object AkkaRecap extends App {
 
   val future = myActor ? "question"
 
+  // the pipe pattern
+  import akka.pattern.pipe
+  val someActor = system.actorOf(Props[SimpleActor], "SomeSimpleActor")
+  future.mapTo[String].pipeTo(someActor)
 
 
 
