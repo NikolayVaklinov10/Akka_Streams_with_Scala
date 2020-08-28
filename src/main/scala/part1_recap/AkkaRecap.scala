@@ -1,11 +1,16 @@
 package part1_recap
 
-import akka.actor.{Actor, ActorSystem, Props, Stash}
+import akka.actor.{Actor, ActorLogging, ActorSystem, Props, Stash}
 
 object AkkaRecap extends App {
 
-  class SimpleActor extends Actor with Stash {
+  class SimpleActor extends Actor with Stash with ActorLogging {
     def receive: Receive = {
+            // SPAWN AN ACTOR
+      case "createChild" =>
+        val childActor = context.actorOf(Props[SimpleActor], "myChild")
+        childActor ! "hello"
+        log.info(s"I am also here $childActor")
           // STASHING
       case "stashThis" =>
         stash()
@@ -23,5 +28,6 @@ object AkkaRecap extends App {
   val system = ActorSystem("AkkaRecapExample")
   val myActor = system.actorOf(Props[SimpleActor], "myActor")
   myActor ! "an email"
+  myActor ! "createChild"
 
 }
