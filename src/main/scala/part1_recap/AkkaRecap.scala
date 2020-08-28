@@ -1,6 +1,7 @@
 package part1_recap
 
-import akka.actor.{Actor, ActorLogging, ActorSystem, Props, Stash}
+import akka.actor.SupervisorStrategy.{Restart, Stop}
+import akka.actor.{Actor, ActorLogging, ActorSystem, OneForOneStrategy, Props, Stash, SupervisorStrategy}
 
 object AkkaRecap extends App {
 
@@ -26,6 +27,11 @@ object AkkaRecap extends App {
 
     override def preStart(): Unit = {
       log.info("I am starting")
+    }
+
+    override def supervisorStrategy: SupervisorStrategy = OneForOneStrategy() {
+      case _: RuntimeException => Restart
+      case _: => Stop
     }
   }
 
