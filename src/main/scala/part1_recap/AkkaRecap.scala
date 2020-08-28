@@ -23,6 +23,10 @@ object AkkaRecap extends App {
     def anotherHandler: Receive = {
       case message => println(s"In another receive handler: $message")
     }
+
+    override def preStart(): Unit = {
+      log.info("I am starting")
+    }
   }
 
   val system = ActorSystem("AkkaRecapExample")
