@@ -40,4 +40,6 @@ object AkkaRecap extends App {
   myActor ! "an email"
   myActor ! "createChild"
 
+  // configure Akka infrastructure: dispatchers, routers and mailboxes
+
 }
