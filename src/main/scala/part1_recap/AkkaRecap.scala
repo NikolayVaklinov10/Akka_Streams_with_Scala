@@ -42,4 +42,12 @@ object AkkaRecap extends App {
 
   // configure Akka infrastructure: dispatchers, routers and mailboxes
 
+  // schedulers
+  import scala.concurrent.duration._
+  import system.dispatcher
+  system.scheduler.scheduleOnce(2 seconds) {
+    myActor ! "delayed happy birthday!"
+  }
+
+
 }
