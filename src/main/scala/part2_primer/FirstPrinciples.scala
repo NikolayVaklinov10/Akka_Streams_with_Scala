@@ -63,4 +63,15 @@ object FirstPrinciples extends App {
   val takeFlow = Flow[Int].take(5)
   // drop, filter
   // NOT have flatMap
+
+  // the way the stream is constructed
+  // source -> flow -> flow -> -> ... -> sink
+  val doubleFlowGraph = source.via(mapFlow).via(takeFlow).to(sink)
+  doubleFlowGraph.run()
+
+  // syntactic sugars
+  val mapSource = Source(1 to 10).map(x => x * 2) // This is equivalent to saying Source(1 to 10).via(Flow[Int].map(x => x * 2))
+
+
+
 }
