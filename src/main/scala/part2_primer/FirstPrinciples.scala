@@ -8,6 +8,7 @@ import scala.concurrent.Future
 
 object FirstPrinciples extends App {
 
+
   implicit val system = ActorSystem("FirstPrinciples")
   implicit val materializer = ActorMaterializer()
 
@@ -50,5 +51,11 @@ object FirstPrinciples extends App {
 
   import scala.concurrent.ExecutionContext.Implicits.global
   val futureSource = Source.fromFuture(Future(42))
+
+  // sinks
+  val theMostBoringSink = Sink.ignore
+  val foreachSink = Sink.foreach[String](println)
+  val headSink = Sink.head[Int] // retrieves head then close the stream
+  val foldSink = Sink.fold[Int, Int](0)((a,b) => a + b)
 
 }
