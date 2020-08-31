@@ -27,5 +27,9 @@ object FirstPrinciples extends App {
   // flow is the akka stream component which job is to transform elements
   val flow = Flow[Int].map(x => x + 1)
   // flow can be attached to sources
-  source.via(flow)
+  val sourceWithFlow = source.via(flow)
+  val flowWithSink = flow.to(sink)
+
+  // a valid graph
+  sourceWithFlow.to(sink).run()
 }
