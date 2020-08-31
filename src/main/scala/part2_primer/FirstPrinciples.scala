@@ -39,8 +39,8 @@ object FirstPrinciples extends App {
 //  source.via(flow).to(sink).run()
 
   // nulls are not allow to emit elements
-  val illegalSource = Source.single[String](null)
-  illegalSource.to(Sink.foreach(println)).run()
+//  val illegalSource = Source.single[String](null)
+//  illegalSource.to(Sink.foreach(println)).run()
   // in order the null limitations to be overcome Options can be used
 
   // different kind of sources
@@ -67,13 +67,29 @@ object FirstPrinciples extends App {
   // the way the stream is constructed
   // source -> flow -> flow -> -> ... -> sink
   val doubleFlowGraph = source.via(mapFlow).via(takeFlow).to(sink)
-  doubleFlowGraph.run()
+//  doubleFlowGraph.run()
 
   // syntactic sugars
   val mapSource = Source(1 to 10).map(x => x * 2) // This is equivalent to saying Source(1 to 10).via(Flow[Int].map(x => x * 2))
   // or even run streams directly
-  mapSource.runForeach(println) // equivalent to mapSource.to(Sink.foreach[Int](println)).run()
+//  mapSource.runForeach(println) // equivalent to mapSource.to(Sink.foreach[Int](println)).run()
 
+  // OPERATORS = components
+
+  /**
+   * Exercise: create a stream that takes the names of persons, then you will keep the first 2 names with length > 5 characters.
+   *
+   */
+  val names = List("Alice", "Bob", "Charlie", "David", "Martin", "AkkaStreams")
+  val nameSource = Source(names)
+  val longNameFlow = Flow[String].filter(name => name.length > 5)
+  val limitFlow = Flow[String].take(2)
+  val nameSink = Sink.foreach[String](println)
+
+  // and chaining them together
+  nameSource.via(longNameFlow).via(limitFlow).to(nameSink).run()
+  // Shorter version of the code above
+  nameSource.filter(_.length > 5).take(2).runForeach(println)
 
 
 }
