@@ -58,4 +58,9 @@ object FirstPrinciples extends App {
   val headSink = Sink.head[Int] // retrieves head then close the stream
   val foldSink = Sink.fold[Int, Int](0)((a,b) => a + b)
 
+  // flows - usually mapped to collection operators
+  val mapFlow = Flow[Int].map(x => 2 * x)
+  val takeFlow = Flow[Int].take(5)
+  // drop, filter
+  // NOT have flatMap
 }
