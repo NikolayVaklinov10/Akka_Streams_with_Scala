@@ -2,7 +2,7 @@ package part2_primer
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
-import akka.stream.scaladsl.{Sink, Source}
+import akka.stream.scaladsl.{Flow, Sink, Source}
 
 object FirstPrinciples extends App {
 
@@ -23,4 +23,9 @@ object FirstPrinciples extends App {
 
   // to start the stream the method run() has to called on the graph
   graph.run()
+
+  // flow is the akka stream component which job is to transform elements
+  val flow = Flow[Int].map(x => x + 1)
+  // flow can be attached to sources
+  source.via(flow)
 }
