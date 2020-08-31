@@ -22,7 +22,7 @@ object FirstPrinciples extends App {
   val graph = source.to(sink)
 
   // to start the stream the method run() has to called on the graph
-  graph.run()
+//  graph.run()
 
   // flow is the akka stream component which job is to transform elements
   val flow = Flow[Int].map(x => x + 1)
@@ -31,5 +31,11 @@ object FirstPrinciples extends App {
   val flowWithSink = flow.to(sink)
 
   // a valid graph
-  sourceWithFlow.to(sink).run()
+//  sourceWithFlow.to(sink).run()
+//  source.to(flowWithSink).run()
+//  source.via(flow).to(sink).run()
+
+  // nulls are not allow to emit elements
+  val illegalSource = Source.single[String](null)
+  illegalSource.to(Sink.foreach(println)).run()
 }
