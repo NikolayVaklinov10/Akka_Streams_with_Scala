@@ -71,6 +71,8 @@ object FirstPrinciples extends App {
 
   // syntactic sugars
   val mapSource = Source(1 to 10).map(x => x * 2) // This is equivalent to saying Source(1 to 10).via(Flow[Int].map(x => x * 2))
+  // or even run streams directly
+  mapSource.runForeach(println) // equivalent to mapSource.to(Sink.foreach[Int](println)).run()
 
 
 
