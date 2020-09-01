@@ -47,5 +47,11 @@ object OperatorFusion extends App {
 
   //  simpleSource.via(complexFlow).via(complexFlow2).to(simpleSink).run()
 
+  // async boundary
+  simpleSource.via(simpleFlow).async.via(simpleFlow2).async.to(simpleSink).run()
+
+  // the async method which introduce the async boundaries to the code speeds up the code
+  // making it to run on several different actors
+
 
 }
