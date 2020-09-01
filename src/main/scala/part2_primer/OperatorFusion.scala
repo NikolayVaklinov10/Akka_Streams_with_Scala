@@ -17,4 +17,8 @@ object OperatorFusion extends App {
   // connecting all the components
   simpleSource.via(simpleFlow).via(simpleFlow2).to(simpleSink).run() // a valid Akka Stream runable graph
 
+  // Attention this run on the same Actor a.k.a. operator/component FUSION
+
+  
+
 }
