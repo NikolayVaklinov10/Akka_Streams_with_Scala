@@ -15,7 +15,7 @@ object OperatorFusion extends App {
   val simpleSink = Sink.foreach[Int](println) // 3. the sink
 
   // connecting all the components
-  simpleSource.via(simpleFlow).via(simpleFlow2).to(simpleSink).run() // a valid Akka Stream runable graph
+//  simpleSource.via(simpleFlow).via(simpleFlow2).to(simpleSink).run() // a valid Akka Stream runable graph
 
   // Attention this run on the same Actor a.k.a. operator/component FUSION
 
@@ -48,10 +48,17 @@ object OperatorFusion extends App {
   //  simpleSource.via(complexFlow).via(complexFlow2).to(simpleSink).run()
 
   // async boundary
-  simpleSource.via(simpleFlow).async.via(simpleFlow2).async.to(simpleSink).run()
+  // simpleSource.via(simpleFlow).async.via(simpleFlow2).async.to(simpleSink).run()
 
   // the async method which introduce the async boundaries to the code speeds up the code
   // making it to run on several different actors
+
+  // ordering guarantees
+  Source(1 to 3)
+    .map(element => { println(s"Flow A: $element"); element}).async
+    .map(element => { println(s"Flow B: $element"); element}).async
+    .map(element => { println(s"Flow C: $element"); element}).async
+    .runWith(Sink.ignore)
 
 
 }
