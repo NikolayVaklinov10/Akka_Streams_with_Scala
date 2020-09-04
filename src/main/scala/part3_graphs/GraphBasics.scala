@@ -18,7 +18,7 @@ object GraphBasics extends App {
 
   // step 1 - setting up the fundamentals for the graph
   val graph = RunnableGraph.fromGraph(
-    GraphDSL.create() { implicit builder: GraphDSL.Builder[NotUsed] =>
+    GraphDSL.create() { implicit builder: GraphDSL.Builder[NotUsed] =>  // builder = MUTABLE data structure
       import GraphDSL.Implicits._ // brings some nice operators into scope
 
       // step 2 - add the necessary components of this graph
@@ -34,7 +34,7 @@ object GraphBasics extends App {
       zip.out ~> output
 
       // step 4 - return a closed shape
-      ClosedShape
+      ClosedShape // FREEZE the builder's shape
       // shape
     } // graph
   ) // runnable graph
