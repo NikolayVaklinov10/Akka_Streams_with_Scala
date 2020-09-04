@@ -39,5 +39,34 @@ object GraphBasics extends App {
     } // graph
   ) // runnable graph
 
-  graph.run() // run the graph and materialize it
+//  graph.run() // run the graph and materialize it
+
+  val firstSink = Sink.foreach[Int](x => println(s"First sink: $x"))
+  val secondSink = Sink.foreach[Int](y => println(s"Second sink: $y"))
+
+  /**
+   * exercise 1: feed a source into 2 sinks at the same time (hint: use a broadcast)
+   */
+
+  // 1) again the fundamental part of the graph
+  val sourceToTwoSinksGraph = RunnableGraph.fromGraph(
+    GraphDSL.create() { implicit builder =>
+      import GraphDSL.Implicits._
+
+      // 2) add the necessary components of the graph
+      val broadcast = builder.add(Broadcast[Int](2))
+
+      // 3) tying up the components
+      input ~> broadcast ~> firstSink// second version of the code below
+      broadcast ~> secondSink
+
+      broadcast.out(0) ~> firstSink // first option of this part of the code
+      broadcast.out(1) ~> secondSink // first option of this part of the code
+
+
+      // 4) return ClosedShape
+      ClosedShape
+
+    }
+  )
 }
