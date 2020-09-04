@@ -3,7 +3,7 @@ package part3_graphs
 import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.stream.{ActorMaterializer, ClosedShape}
-import akka.stream.scaladsl.{Broadcast, Flow, GraphDSL, RunnableGraph, Sink, Source, Zip}
+import akka.stream.scaladsl.{Balance, Broadcast, Flow, GraphDSL, Merge, RunnableGraph, Sink, Source, Zip}
 
 object GraphBasics extends App {
 
@@ -60,8 +60,8 @@ object GraphBasics extends App {
       input ~> broadcast ~> firstSink// second version of the code below
       broadcast ~> secondSink
 
-      broadcast.out(0) ~> firstSink // first option of this part of the code
-      broadcast.out(1) ~> secondSink // first option of this part of the code
+//      broadcast.out(0) ~> firstSink // first option of this part of the code
+//      broadcast.out(1) ~> secondSink // first option of this part of the code
 
 
       // 4) return ClosedShape
@@ -69,4 +69,38 @@ object GraphBasics extends App {
 
     }
   )
+  /**
+   * exercise 2 balance
+   */
+  // some sources
+  import scala.concurrent.duration._
+  val fastSource = input.throttle(5, 1 second)
+  val slowSource = input.throttle(2, 1 second)
+
+  // a couple of sinks
+  val sink1 = Sink.foreach[Int](x => println(s"Sink 1: $x"))
+  val sink2 = Sink.foreach[Int](x => println(s"Sink 2: $x"))
+
+
+
+
+  // step 1
+  val balanceGraph = RunnableGraph.fromGraph(
+    GraphDSL.create() { implicit builder =>
+      import GraphDSL.Implicits._
+
+      // step 2 the necessary components
+      val merge = builder.add(Merge[Int](2))
+      val balance = builder.add(Balance[Int](2))
+
+      // step 3 tying up the components
+      fastSource ~> merge ~> balance ~> sink1
+      slowSource ~> merge; balance ~> sink2
+
+      // step 4 the ClosedShape
+      ClosedShape
+    }
+  )
+
+  balanceGraph.run()
 }
