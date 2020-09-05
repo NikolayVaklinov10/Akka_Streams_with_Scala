@@ -1,8 +1,8 @@
 package part3_graphs
 
 import akka.actor.ActorSystem
-import akka.stream.{ActorMaterializer, SourceShape}
-import akka.stream.scaladsl.{Concat, GraphDSL, Sink, Source}
+import akka.stream.{ActorMaterializer, SinkShape, SourceShape}
+import akka.stream.scaladsl.{Broadcast, Concat, GraphDSL, Sink, Source}
 
 object OpenGraphs extends App {
 
@@ -36,5 +36,29 @@ object OpenGraphs extends App {
   )
 
   sourceGraph.to(Sink.foreach(println)).run()
+
+  /*
+    Complex sink
+   */
+  val sink1 = Sink.foreach[Int](x => println(s"Meaningful thing 1: $x"))
+  val sink2 = Sink.foreach[Int](x => println(s"Meaningful thing 2: $x"))
+
+  // step 1
+  val sinkGraph = Sink.fromGraph(
+    GraphDSL.create() { implicit builder =>
+      import GraphDSL.Implicits._
+
+      // step 2 - add a broadcast
+      val broadcast = builder.add(Broadcast[Int](2))
+
+      // step 3 - tie components together
+      broadcast ~> sink1
+      broadcast ~> sink2
+
+      // step 4 return the shape
+      SinkShape(broadcast.in)
+    }
+  )
+  firstSource.to(sinkGraph).run()
 
 }
