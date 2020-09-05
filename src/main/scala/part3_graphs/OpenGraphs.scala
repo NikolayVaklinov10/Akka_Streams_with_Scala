@@ -89,6 +89,25 @@ object OpenGraphs extends App {
 
   firstSource.via(flowGraph).to(Sink.foreach(println)).run()
 
+  /**
+   * Exercise: flow from a sink and a source?
+   */
+  def fromSinkAndSource[A, B](sink: Sink[A, _], source: Source[B, _]): Flow[A, B, _] =
+
+  // step 1
+    Flow.fromGraph(
+      GraphDSL.create() { implicit builder =>
+        // step 2: declare the SHAPES
+        val sourceShape = builder.add(source)
+        val sinkShape = builder.add(sink)
+
+        // step 3
+        // step 4
+        FlowShape(sinkShape.in, sourceShape.out)
+      }
+    )
+  val f = Flow.fromSinkAndSourceCoupled(Sink.foreach[String](println), Source(1 to  10))
+
 
 
 }
