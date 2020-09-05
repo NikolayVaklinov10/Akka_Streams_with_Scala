@@ -1,8 +1,8 @@
 package part3_graphs
 
 import akka.actor.ActorSystem
-import akka.stream.{ActorMaterializer, SinkShape, SourceShape}
-import akka.stream.scaladsl.{Broadcast, Concat, GraphDSL, Sink, Source}
+import akka.stream.{ActorMaterializer, FlowShape, SinkShape, SourceShape}
+import akka.stream.scaladsl.{Broadcast, Concat, Flow, GraphDSL, Sink, Source}
 
 object OpenGraphs extends App {
 
@@ -35,7 +35,7 @@ object OpenGraphs extends App {
     }
   )
 
-  sourceGraph.to(Sink.foreach(println)).run()
+//  sourceGraph.to(Sink.foreach(println)).run()
 
   /*
     Complex sink
@@ -59,6 +59,36 @@ object OpenGraphs extends App {
       SinkShape(broadcast.in)
     }
   )
-  firstSource.to(sinkGraph).run()
+//  firstSource.to(sinkGraph).run()
+
+  /**
+   * Challenge - complex flow?
+   * Write your own flow that is composed of two other flows
+   * - one that adds 1 to a number
+   * - one that does number * 10
+   */
+  val incrementer = Flow[Int].map(_ + 1)
+  val multiplier = Flow[Int].map(_ * 10)
+
+  // step 1
+  val flowGraph = Flow.fromGraph(
+    GraphDSL.create() { implicit builder =>
+      import GraphDSL.Implicits._
+
+      // everything operates on SHAPES
+
+      // step 2 - define auxiliary SHAPES
+      val incrementerShape = builder.add(incrementer)
+      val multiplierShape = builder.add(multiplier)
+      // step 3 - connect the SHAPES
+      incrementerShape ~> multiplierShape
+
+      FlowShape(incrementerShape.in, multiplierShape.out)
+    } // static graph
+  ) // component
+
+  firstSource.via(flowGraph).to(Sink.foreach(println)).run()
+
+
 
 }
