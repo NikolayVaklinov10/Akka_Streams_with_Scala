@@ -2,7 +2,7 @@ package part3_graphs
 
 import akka.actor.ActorSystem
 import akka.stream.{ActorMaterializer, SourceShape}
-import akka.stream.scaladsl.{Concat, GraphDSL, Source}
+import akka.stream.scaladsl.{Concat, GraphDSL, Sink, Source}
 
 object OpenGraphs extends App {
 
@@ -34,5 +34,7 @@ object OpenGraphs extends App {
       SourceShape(concat.out)
     }
   )
+
+  sourceGraph.to(Sink.foreach(println)).run()
 
 }
