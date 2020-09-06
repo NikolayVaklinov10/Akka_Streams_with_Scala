@@ -2,7 +2,7 @@ package part3_graphs
 
 import akka.actor.ActorSystem
 import akka.stream.{ActorMaterializer, SinkShape}
-import akka.stream.scaladsl.{Broadcast, Flow, GraphDSL, Sink, Source}
+import akka.stream.scaladsl.{Broadcast, Flow, GraphDSL, Keep, Sink, Source}
 
 object GraphMaterializedValues extends App {
 
@@ -37,5 +37,6 @@ object GraphMaterializedValues extends App {
       SinkShape(broadcast.in)
     }
   )
+  val future = wordSource.toMat(complexWordSink)(Keep.right).run()
 
 }
