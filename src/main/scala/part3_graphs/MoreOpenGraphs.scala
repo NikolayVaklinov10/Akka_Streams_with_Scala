@@ -56,7 +56,7 @@ object MoreOpenGraphs extends App {
       ClosedShape
     }
   )
-  max3RunnableGraph.run()
+//  max3RunnableGraph.run()
 
   // same for UniformFanOutShape
 
@@ -75,7 +75,7 @@ object MoreOpenGraphs extends App {
 
   val transactionSource = Source(List(
     Transaction("5273334637367", "Paul", "Jim", 100, new Date),
-    Transaction("7878734637367", "Daniel", "Jim", 10000, new Date),
+    Transaction("7878734637367", "Daniel", "Jim", 100000, new Date),
     Transaction("3737334637367", "Jim", "Alice", 7000, new Date)
   ))
 
@@ -97,4 +97,23 @@ object MoreOpenGraphs extends App {
     // step 4
     new FanOutShape2(broadcast.in, broadcast.out(1), txnIdExtractor.out)
   }
+
+  // the runnable graph
+  val suspiciousTxnRunnableGraph = RunnableGraph.fromGraph(
+    GraphDSL.create() { implicit builder =>
+      import GraphDSL.Implicits._
+
+      // step 2
+      val suspiciousTxnShape = builder.add(suspiciousTxnStaticGraph)
+
+      // step 3
+      transactionSource ~> suspiciousTxnShape.in
+      suspiciousTxnShape.out0 ~> bankProcessor
+      suspiciousTxnShape.out1 ~> suspiciousAnalysisService
+
+      // step 4
+      ClosedShape
+    }
+  )
+  suspiciousTxnRunnableGraph.run()
 }
