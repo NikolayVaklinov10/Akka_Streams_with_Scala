@@ -37,6 +37,6 @@ object GraphMaterializedValues extends App {
       SinkShape(broadcast.in)
     }
   )
-  val future = wordSource.toMat(complexWordSink)(Keep.right).run()
+  val shortStringsCountFuture = wordSource.toMat(complexWordSink)(Keep.right).run()
 
 }
