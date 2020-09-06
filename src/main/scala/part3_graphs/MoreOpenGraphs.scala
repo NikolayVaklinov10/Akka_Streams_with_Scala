@@ -1,8 +1,10 @@
 package part3_graphs
 
+import java.util.Date
+
 import akka.actor.ActorSystem
-import akka.stream.{ActorMaterializer, ClosedShape, UniformFanInShape}
-import akka.stream.scaladsl.{GraphDSL, RunnableGraph, Sink, Source, ZipWith}
+import akka.stream.{ActorMaterializer, ClosedShape, FanOutShape2, UniformFanInShape}
+import akka.stream.scaladsl.{Broadcast, Flow, GraphDSL, RunnableGraph, Sink, Source, ZipWith}
 
 object MoreOpenGraphs extends App {
 
@@ -55,4 +57,44 @@ object MoreOpenGraphs extends App {
     }
   )
   max3RunnableGraph.run()
+
+  // same for UniformFanOutShape
+
+  /*
+    Non-uniform fan out shape
+
+    Processing bank transactions
+    Txn suspicious if amount > 10000
+
+    Streams component for txns
+    - output1: let the transaction go through
+    - output2: suspicious txn ids
+   */
+
+  case class Transaction(id: String, source: String, recipient: String, amount: Int, date: Date)
+
+  val transactionSource = Source(List(
+    Transaction("5273334637367", "Paul", "Jim", 100, new Date),
+    Transaction("7878734637367", "Daniel", "Jim", 10000, new Date),
+    Transaction("3737334637367", "Jim", "Alice", 7000, new Date)
+  ))
+
+  val bankProcessor = Sink.foreach[Transaction](println)
+  val suspiciousAnalysisService = Sink.foreach[String](txnid => println(s"Suspicious transaction ID: $txnid"))
+
+  // step 1
+  val suspiciousTxnStaticGraph = GraphDSL.create() { implicit builder =>
+    import GraphDSL.Implicits._
+
+    // step 2 - define SHAPES
+    val broadcast = builder.add(Broadcast[Transaction](2))
+    val suspiciousTxnFilter = builder.add(Flow[Transaction].filter(txn => txn.amount > 10000))
+    val txnIdExtractor = builder.add(Flow[Transaction].map[String](txn => txn.id))
+
+    // step 3 - tie SHAPES
+    broadcast.out(0) ~> suspiciousTxnFilter ~> txnIdExtractor
+
+    // step 4
+    new FanOutShape2(broadcast.in, broadcast.out(1), txnIdExtractor.out)
+  }
 }
