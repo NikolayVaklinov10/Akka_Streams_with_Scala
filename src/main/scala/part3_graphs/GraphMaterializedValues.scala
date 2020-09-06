@@ -4,6 +4,8 @@ import akka.actor.ActorSystem
 import akka.stream.{ActorMaterializer, SinkShape}
 import akka.stream.scaladsl.{Broadcast, Flow, GraphDSL, Keep, Sink, Source}
 
+import scala.util.{Failure, Success}
+
 object GraphMaterializedValues extends App {
 
   implicit val system = ActorSystem("GraphMaterializedValues")
@@ -37,6 +39,11 @@ object GraphMaterializedValues extends App {
       SinkShape(broadcast.in)
     }
   )
+  import system.dispatcher
   val shortStringsCountFuture = wordSource.toMat(complexWordSink)(Keep.right).run()
+  shortStringsCountFuture.onComplete {
+    case Success(count) => println(s"The total number of short strings is: $count")
+    case Failure(exception) => println(s"The count of short strings failed: $exception")
+  }
 
 }
