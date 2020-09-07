@@ -68,7 +68,7 @@ object GraphCycles extends App {
     ClosedShape
   }
 
-  RunnableGraph.fromGraph(bufferedRepeater).run()
+//  RunnableGraph.fromGraph(bufferedRepeater).run()
 
   /*
   if cycles are add to the code there is a risk of deadlocking
