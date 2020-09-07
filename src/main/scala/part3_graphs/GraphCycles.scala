@@ -118,10 +118,11 @@ object GraphCycles extends App {
       source1 ~> fibo.in(0)
       source2 ~> fibo.in(1)
       fibo.out ~> sink
-      
+
       ClosedShape
     }
   )
+  fiboGraph.run()
 
 
 }
