@@ -1,7 +1,7 @@
 package part3_graphs
 
 import akka.actor.ActorSystem
-import akka.stream.{ActorMaterializer, ClosedShape}
+import akka.stream.{ActorMaterializer, ClosedShape, OverflowStrategy}
 import akka.stream.scaladsl.{Flow, GraphDSL, Merge, MergePreferred, RunnableGraph, Source}
 
 object GraphCycles extends App {
@@ -46,6 +46,34 @@ object GraphCycles extends App {
 
     ClosedShape
   }
-  RunnableGraph.fromGraph(actualAccelerator).run()
+//  RunnableGraph.fromGraph(actualAccelerator).run()
+
+  /*
+    Solution 2: buffers
+   */
+  val bufferedRepeater = GraphDSL.create() { implicit builder =>
+    import GraphDSL.Implicits._
+
+    val sourceShape = builder.add(Source(1 to 100))
+    val mergeShape = builder.add(Merge[Int](2))
+    val incrementerShape = builder.add(Flow[Int].buffer(10, OverflowStrategy.dropHead).map { x =>
+      println(s"Accelerating $x")
+      Thread.sleep(100)
+      x
+    })
+
+    sourceShape ~> mergeShape ~> incrementerShape
+    mergeShape <~ incrementerShape
+
+    ClosedShape
+  }
+
+  RunnableGraph.fromGraph(bufferedRepeater).run()
+
+  /*
+  if cycles are add to the code there is a risk of deadlocking
+  - one solution to the problem is to add bounds to the number of elements in the cycle
+   */
+
 
 }
