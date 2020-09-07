@@ -1,7 +1,7 @@
 package part3_graphs
 
 import akka.actor.ActorSystem
-import akka.stream.{ActorMaterializer, BidiShape}
+import akka.stream.{ActorMaterializer, BidiShape, ClosedShape}
 import akka.stream.scaladsl.{Flow, GraphDSL, RunnableGraph, Sink, Source}
 
 object BidirectionalFlows extends App {
@@ -41,9 +41,14 @@ object BidirectionalFlows extends App {
       val unencryptedSourceShape = builder.add(unencryptedSource)
       val encryptedSourceShape = builder.add(encryptedSource)
       val bidi = builder.add(bidiCryptoStaticGraph)
-      val encryptedSink = builder.add(Sink.foreach[String](string => println(s"Encrypted: $string")))
-      val decryptedSink = builder.add(Sink.foreach[String](string => println(s"Decrypted: $string")))
+      val encryptedSinkShape = builder.add(Sink.foreach[String](string => println(s"Encrypted: $string")))
+      val decryptedSinkShape = builder.add(Sink.foreach[String](string => println(s"Decrypted: $string")))
 
+      unencryptedSourceShape ~> bidi.in1 ; bidi.out1 ~> encryptedSinkShape
+      decryptedSinkShape <~ bidi.out2   ; bidi.in2 <~ encryptedSourceShape
+
+      ClosedShape
     }
   )
+  cryptoBidiGraph.run()
 }
