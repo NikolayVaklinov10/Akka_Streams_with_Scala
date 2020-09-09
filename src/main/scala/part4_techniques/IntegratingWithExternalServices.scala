@@ -12,7 +12,8 @@ object IntegratingWithExternalServices extends App {
 
   implicit val system = ActorSystem("IntegratingWithExternalServices")
   implicit val materializer = ActorMaterializer()
-  import system.dispatcher
+//  import system.dispatcher
+  implicit val dispatcher = system.dispatchers.lookup("dedicated-dispatcher")
 
 
   // external service may look like this
@@ -54,7 +55,7 @@ object IntegratingWithExternalServices extends App {
   val infraEvents = eventSource.filter(_.application == "AkkaInfra")
   val pagedEngineerEmails = infraEvents.mapAsync(parallelism = 4)(event => PagerService.processEvent(event))
   val pagedEmailsSink = Sink.foreach[String](email => println(s"Successfully sent notification to $email"))
-  
+
   pagedEngineerEmails.to(pagedEmailsSink).run()
 
 
