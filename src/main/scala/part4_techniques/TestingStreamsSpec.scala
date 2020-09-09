@@ -3,6 +3,7 @@ package part4_techniques
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{Flow, Keep, Sink, Source}
+import akka.stream.testkit.scaladsl.TestSink
 import akka.testkit.{TestKit, TestProbe}
 import org.scalatest.{BeforeAndAfterAll, WordSpecLike}
 
@@ -54,6 +55,18 @@ class TestingStreamsSpec extends TestKit(ActorSystem("TestingStreamsSpec"))
 
       streamUnderTest.to(probeSink).run()
       probe.expectMsgAllOf(0, 1, 3, 6, 10, 15)
+    }
+
+    "integrate with Streams TestKit Sink" in {
+      val sourceUnderTest = Source(1 to 5).map(_ * 2)
+
+      val testSink = TestSink.probe[Int]
+      val materializedTestValue = sourceUnderTest.runWith(testSink)
+
+      materializedTestValue
+        .request(5)
+        .expectNext(2, 4, 6, 8, 10)
+        .expectComplete()
     }
   }
 
