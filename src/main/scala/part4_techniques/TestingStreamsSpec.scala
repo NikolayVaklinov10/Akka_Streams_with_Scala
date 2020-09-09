@@ -2,7 +2,7 @@ package part4_techniques
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
-import akka.stream.scaladsl.{Keep, Sink, Source}
+import akka.stream.scaladsl.{Flow, Keep, Sink, Source}
 import akka.testkit.{TestKit, TestProbe}
 import org.scalatest.{BeforeAndAfterAll, WordSpecLike}
 
@@ -40,6 +40,20 @@ class TestingStreamsSpec extends TestKit(ActorSystem("TestingStreamsSpec"))
       val probe = TestProbe()
 
       simpleSource.toMat(simpleSink)(Keep.right).run().pipeTo(probe.ref)
+
+      probe.expectMsg(55)
+    }
+
+    "integrate with a test-actor-based sink" in {
+      val simpleSource = Source(1 to 5)
+      val flow = Flow[Int].scan[Int](0)(_ + _) // 0, 1, 3, 6, 10, 15
+      val streamUnderTest = simpleSource.via(flow)
+
+      val probe = TestProbe()
+      val probeSink = Sink.actorRef(probe.ref, "completionMessage")
+
+      streamUnderTest.to(probeSink).run()
+      probe.expectMsgAllOf(0, 1, 3, 6, 10, 15)
     }
   }
 
