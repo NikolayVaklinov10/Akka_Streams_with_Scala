@@ -1,7 +1,8 @@
 package part4_techniques
 
 import akka.actor.ActorSystem
-import akka.stream.ActorMaterializer
+import akka.stream.{ActorAttributes, ActorMaterializer}
+import akka.stream.Supervision.{Resume, Stop}
 import akka.stream.scaladsl.{RestartSource, Sink, Source}
 
 import scala.concurrent.duration._
@@ -46,9 +47,21 @@ object FaultTolerance extends App {
   restartSource
     .log("restartBackoff")
     .to(Sink.ignore)
-  .run()
+  //.run()
 
+  // 5 - supervision strategy
+  val numbers = Source(1 to 20).map(n => if (n == 13) throw new RuntimeException("bad luck") else n).log("supervision")
+  val supervisedNumbers = numbers.withAttributes(ActorAttributes.supervisionStrategy {
+    /*
+     Resume = skips the faulty element
+     Stop = stop the stream
+     Restart = resume + clears internal state
+    */
+    case _: RuntimeException => Resume
+    case _ => Stop
+  })
 
+  supervisedNumbers.to(Sink.ignore).run()
 
 
 
