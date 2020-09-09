@@ -44,6 +44,58 @@ object IntegratingWithActors extends App {
   val actorPoweredSource = Source.actorRef[Int](bufferSize = 10, overflowStrategy = OverflowStrategy.dropHead)
   val materializedActorRef = actorPoweredSource.to(Sink.foreach[Int](number => println(s"Actor powered flow got number: $number"))).run()
   materializedActorRef ! 10
+  // terminating the stream
+  materializedActorRef ! akka.actor.Status.Success("complete")
+
+  /*
+    Actor as a destination/sink
+    - an init message
+    - an ack message to confirm the reception
+    - a complete message
+    - a function to generate a message in case the stream throws an exception
+   */
+
+  case object StreamInit
+  case object StreamAck
+  case object StreamComplete
+  case class StreamFail(ex: Throwable)
+
+  class DestinationActor extends Actor with ActorLogging {
+    override def receive: Receive = {
+      case StreamInit =>
+        log.info("Stream initialized")
+        sender() ! StreamAck
+      case StreamComplete =>
+        log.info("Stream complete")
+        context.stop(self)
+      case StreamFail(ex) =>
+        log.warning(s"Stream failed: $ex")
+      case message =>
+        log.info(s"Message $message has come to its final resting point.")
+        sender() ! StreamAck
+    }
+  }
+
+  val destinationActor = system.actorOf(Props[DestinationActor], "destinationActor")
+
+  val actorPoweredSink = Sink.actorRefWithAck[Int](
+    destinationActor,
+    onInitMessage = StreamInit,
+    onCompleteMessage = StreamComplete,
+    ackMessage = StreamAck,
+    onFailureMessage = throwable => StreamFail(throwable) // option
+  )
+
+  Source(1 to 10).to(actorPoweredSink).run()
+
+
+
+
 
 
 }
+
+
+
+
+
