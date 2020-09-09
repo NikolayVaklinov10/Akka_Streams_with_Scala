@@ -1,7 +1,11 @@
 package part4_techniques
 
-import akka.actor.{Actor, ActorLogging, ActorSystem}
+import akka.actor.{Actor, ActorLogging, ActorSystem, Props}
 import akka.stream.ActorMaterializer
+import akka.stream.scaladsl.{Flow, Sink, Source}
+import akka.util.Timeout
+
+import scala.concurrent.duration._
 
 object IntegratingWithActors extends App {
 
@@ -20,4 +24,16 @@ object IntegratingWithActors extends App {
       case _ =>
     }
   }
+
+  val simpleActor = system.actorOf(Props[SimpleActor],"simpleActor")
+
+  val numbersSource = Source(1 to 10)
+
+  // actor as a flow
+  implicit val timeout = Timeout(2 second)
+  val actorBasedFlow = Flow[Int].ask[Int](parallelism = 4)(simpleActor)
+
+  // plugin everything together
+  numbersSource.via(actorBasedFlow).to(Sink.foreach[Int](println)).run()
+
 }
