@@ -1,7 +1,7 @@
 package part4_techniques
 
 import akka.actor.{Actor, ActorLogging, ActorSystem, Props}
-import akka.stream.ActorMaterializer
+import akka.stream.{ActorMaterializer, OverflowStrategy}
 import akka.stream.scaladsl.{Flow, Sink, Source}
 import akka.util.Timeout
 
@@ -34,6 +34,16 @@ object IntegratingWithActors extends App {
   val actorBasedFlow = Flow[Int].ask[Int](parallelism = 4)(simpleActor)
 
   // plugin everything together
-  numbersSource.via(actorBasedFlow).to(Sink.foreach[Int](println)).run()
+//  numbersSource.via(actorBasedFlow).to(Sink.ignore).run()
+//  // now exactly the same thing written in another way
+//  numbersSource.ask[Int](parallelism = 4)(simpleActor).to(Sink.ignore).run()
+
+  /*
+    Actor as a source
+   */
+  val actorPoweredSource = Source.actorRef[Int](bufferSize = 10, overflowStrategy = OverflowStrategy.dropHead)
+  val materializedActorRef = actorPoweredSource.to(Sink.foreach[Int](number => println(s"Actor powered flow got number: $number"))).run()
+  materializedActorRef ! 10
+
 
 }
