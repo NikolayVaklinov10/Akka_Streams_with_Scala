@@ -18,7 +18,7 @@ object IntegratingWithExternalServices extends App {
 
 
   // external service may look like this
-  def genericExtService[A, B](element: A): Future[B] = ???
+  //def genericExtService[A, B](element: A): Future[B] = ???
 
 
   // a realistic example
@@ -87,7 +87,7 @@ object IntegratingWithExternalServices extends App {
   }
   import akka.pattern.ask
   import scala.concurrent.duration._
-  implicit val timeout = Timeout(2 seconds)
+  implicit val timeout = Timeout(3 seconds)
   val pagerActor = system.actorOf(Props[PagerActor], "pagerActor")
   val alternativePagedEngineerEmails = infraEvents.mapAsync(parallelism = 4)(event =>(pagerActor ? event).mapTo[String])
   alternativePagedEngineerEmails.to(pagedEmailsSink).run()
