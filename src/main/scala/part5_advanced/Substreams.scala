@@ -43,6 +43,27 @@ object Substreams extends App {
     case Failure(ex) => println(s"Char computation failed: $ex")
   }
 
+  // 3 - splitting a stream into substreams, when a condition is met
+
+  val text =
+    "I love Akka Streams\n" +
+      "this is amazing\n" +
+      "learning from Rock the JVM\n"
+
+  val anotherCharCountFuture = Source(text.toList)
+    .splitWhen(c => c == '\n')
+    .filter(_ != '\n')
+    .map(_ => 1)
+    .mergeSubstreams
+    .toMat(Sink.reduce[Int](_ + _))(Keep.right)
+    .run()
+
+  anotherCharCountFuture.onComplete {
+    case Success(value) => println(s"Total char count alternative: $value")
+    case Failure(ex) => println(s"Char computation failed: $ex")
+  }
+
+
 
 
 
