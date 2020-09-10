@@ -1,7 +1,7 @@
 package part5_advanced
 
 import akka.actor.ActorSystem
-import akka.stream.scaladsl.{Keep, MergeHub, Sink, Source}
+import akka.stream.scaladsl.{BroadcastHub, Keep, MergeHub, Sink, Source}
 import akka.stream.{ActorMaterializer, KillSwitches}
 
 import scala.concurrent.duration._
@@ -46,8 +46,12 @@ object DynamicStreamHandling extends App {
   Source(1 to 10).runWith(materializedSink)
   counter.runWith(materializedSink)
 
+  // BroadcastHub
 
-
-
+  val dynamicBroadcast = BroadcastHub.sink[Int]
+  val materializedSource = Source(1 to 10).runWith(dynamicBroadcast)
+  
+  materializedSource.runWith(Sink.ignore)
+  materializedSource.runWith(Sink.foreach[Int](println))
 
 }
