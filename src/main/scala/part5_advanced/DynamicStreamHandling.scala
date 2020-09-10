@@ -1,7 +1,7 @@
 package part5_advanced
 
 import akka.actor.ActorSystem
-import akka.stream.scaladsl.{Keep, Sink, Source}
+import akka.stream.scaladsl.{Keep, MergeHub, Sink, Source}
 import akka.stream.{ActorMaterializer, KillSwitches}
 
 import scala.concurrent.duration._
@@ -37,6 +37,14 @@ object DynamicStreamHandling extends App {
   system.scheduler.scheduleOnce(3 seconds) {
     sharedKillSwitch.shutdown()
   }
+
+  // MergeHub
+  val dynamicMerge = MergeHub.source[Int]
+  val materializedSink = dynamicMerge.to(Sink.foreach[Int](println)).run()
+
+  // use this sink any time I want
+  Source(1 to 10).runWith(materializedSink)
+  counter.runWith(materializedSink)
 
 
 
