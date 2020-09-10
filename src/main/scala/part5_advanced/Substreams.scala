@@ -63,6 +63,10 @@ object Substreams extends App {
     case Failure(ex) => println(s"Char computation failed: $ex")
   }
 
+  // 4 - flattening
+  val simpleSource = Source(1 to 5)
+  simpleSource.flatMapConcat(x => Source(x to (3 * x))).runWith(Sink.foreach(println))
+  simpleSource.flatMapMerge(2, x => Source(x to (3 * x))).runWith(Sink.foreach(println))
 
 
 
