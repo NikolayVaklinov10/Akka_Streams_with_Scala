@@ -2,7 +2,7 @@ package part5_advanced
 
 import akka.actor.ActorSystem
 import akka.stream.scaladsl.{Sink, Source}
-import akka.stream.{ActorMaterializer, Attributes, Inlet, Outlet, SinkShape, SourceShape}
+import akka.stream.{ActorMaterializer, Attributes, FlowShape, Inlet, Outlet, SinkShape, SourceShape}
 import akka.stream.stage.{GraphStage, GraphStageLogic, InHandler, OutHandler}
 
 import scala.collection.mutable
@@ -88,5 +88,39 @@ object CustomOperators extends App {
   val batcherSink = Sink.fromGraph(new Batcher(10))
   // randomGeneratorSource.to(batcherSink).run()
 
+  /**
+   * Exercise: a custom flow - a simple filter flow
+   * - 2 ports: an input port and an output port
+   */
+
+  class SimpleFilter[T](predicate: T => Boolean) extends GraphStage[FlowShape[T, T]] {
+
+    val inPort = Inlet[T]("filterIn")
+    val outPort = Outlet[T]("filterOut")
+
+    override def shape: FlowShape[T, T] = FlowShape(inPort, outPort)
+
+    override def createLogic(inheritedAttributes: Attributes): GraphStageLogic = new GraphStageLogic(shape) {
+      setHandler(outPort, new OutHandler {
+        override def onPull(): Unit = pull(inPort)
+      })
+
+      setHandler(inPort, new InHandler {
+        override def onPush(): Unit = {
+          try {
+            val nextElement = grab(inPort)
+
+            if (predicate(nextElement)) {
+              push(outPort, nextElement) // pass it on
+            } else {
+              pull(inPort) // ask for another element
+            }
+          } catch {
+            case e: Throwable => failStage(e)
+          }
+        }
+      })
+    }
+  }
 
 }
