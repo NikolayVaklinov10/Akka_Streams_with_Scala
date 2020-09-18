@@ -1,7 +1,7 @@
 package part5_advanced
 
 import akka.actor.ActorSystem
-import akka.stream.scaladsl.{Sink, Source}
+import akka.stream.scaladsl.{Flow, Sink, Source}
 import akka.stream.{ActorMaterializer, Attributes, FlowShape, Inlet, Outlet, SinkShape, SourceShape}
 import akka.stream.stage.{GraphStage, GraphStageLogic, InHandler, OutHandler}
 
@@ -122,5 +122,14 @@ object CustomOperators extends App {
       })
     }
   }
+
+  val myFilter = Flow.fromGraph(new SimpleFilter[Int](_ > 50))
+  // randomGeneratorSource.via(myFilter).to(batcherSink).run()
+  // backpressure OOTB!!!!!
+
+  /**
+   * Materialized values in graph stages
+   */
+
 
 }
