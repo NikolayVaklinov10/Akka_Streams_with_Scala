@@ -3,9 +3,10 @@ package part5_advanced
 import akka.actor.ActorSystem
 import akka.stream.scaladsl.{Flow, Sink, Source}
 import akka.stream.{ActorMaterializer, Attributes, FlowShape, Inlet, Outlet, SinkShape, SourceShape}
-import akka.stream.stage.{GraphStage, GraphStageLogic, InHandler, OutHandler}
+import akka.stream.stage.{GraphStage, GraphStageLogic, GraphStageWithMaterializedValue, InHandler, OutHandler}
 
 import scala.collection.mutable
+import scala.concurrent.{Future, Promise}
 import scala.util.Random
 
 object CustomOperators extends App {
@@ -130,6 +131,56 @@ object CustomOperators extends App {
   /**
    * Materialized values in graph stages
    */
+
+  // 3 - a flow that counts the number of elements that go through it
+  class CounterFlow[T] extends GraphStageWithMaterializedValue[FlowShape[T, T], Future[Int]] {
+
+    val inPort = Inlet[T]("counterInt")
+    val outPort = Outlet[T]("counterOut")
+
+    override val shape = FlowShape(inPort, outPort)
+
+    override def createLogicAndMaterializedValue(inheritedAttributes: Attributes): (GraphStageLogic, Future[Int]) = {
+
+      val promise = Promise[Int]
+      val logic = new GraphStageLogic(shape) {
+        // setting mutable state
+        var counter = 0
+
+        setHandler(outPort, new OutHandler {
+          override def onPull(): Unit = pull(inPort)
+
+          override def onDownstreamFinish(): Unit = {
+            promise.success(counter)
+            super.onDownstreamFinish()
+          }
+        })
+
+        setHandler(inPort, new InHandler {
+          override def onPush(): Unit = {
+            // extract the element
+            val nextElement = grab(inPort)
+            counter += 1
+            // pass it on
+            push(outPort, nextElement)
+          }
+
+          override def onUpstreamFinish(): Unit = {
+            promise.success(counter)
+            super.onUpstreamFinish()
+          }
+
+          override def onUpstreamFailure(ex: Throwable): Unit = {
+            promise.failure(ex)
+            super.onUpstreamFailure(ex)
+          }
+        })
+      }
+
+      (logic, promise.future)
+    }
+  }
+
 
 
 }
