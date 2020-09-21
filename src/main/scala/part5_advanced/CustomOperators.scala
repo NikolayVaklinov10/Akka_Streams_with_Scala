@@ -1,7 +1,7 @@
 package part5_advanced
 
 import akka.actor.ActorSystem
-import akka.stream.scaladsl.{Flow, Sink, Source}
+import akka.stream.scaladsl.{Flow, Keep, Sink, Source}
 import akka.stream.{ActorMaterializer, Attributes, FlowShape, Inlet, Outlet, SinkShape, SourceShape}
 import akka.stream.stage.{GraphStage, GraphStageLogic, GraphStageWithMaterializedValue, InHandler, OutHandler}
 
@@ -180,6 +180,14 @@ object CustomOperators extends App {
       (logic, promise.future)
     }
   }
+
+  val counterFlow = Flow.fromGraph(new CounterFlow[Int])
+  val countFuture = Source(1 to 10)
+    // .map(x => if (x == 7) throw new RuntimeException("gotcha!") else x)
+    .viaMat(counterFlow)(Keep.right)
+    .to(Sink.foreach(x => if (x == 7) throw new RuntimeException("gotcha, sink!") else println(x)))
+    // .to(Sink.foreach[Int](println))
+    .run()
 
 
 
