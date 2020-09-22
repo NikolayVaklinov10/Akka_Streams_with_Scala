@@ -7,7 +7,7 @@ import akka.stream.stage.{GraphStage, GraphStageLogic, GraphStageWithMaterialize
 
 import scala.collection.mutable
 import scala.concurrent.{Future, Promise}
-import scala.util.Random
+import scala.util.{Failure, Random, Success}
 
 object CustomOperators extends App {
   implicit val system = ActorSystem("CustomOperators")
@@ -189,6 +189,11 @@ object CustomOperators extends App {
     // .to(Sink.foreach[Int](println))
     .run()
 
+  import system.dispatcher
+  countFuture.onComplete {
+    case Success(count) => println(s"The number of elements passed: $count")
+    case Failure(ex) => println(s"Counting the elements failed: $ex")
+  }
 
 
 }
