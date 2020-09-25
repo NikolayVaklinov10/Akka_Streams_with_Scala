@@ -36,13 +36,13 @@ object Playground extends App {
   actor ! Decrementer(8)
   actor ! "Print"
 
-  def factorial(n:Int):Int = {
-    def factorialTailrec(remaining:Int, accumulator: Int):Int = {
-      if(remaining.isEmpty) accumulator
-      else (remaining.tail, remaining.head * accumulator)
-    }
-    factorialTailrec(n,0)
-  }
+//  def factorial(n:Int):Int = {
+//    def factorialTailrec(remaining:Int, accumulator: Int):Int = {
+//      if(remaining.isEmpty) accumulator
+//      else (remaining.tail, remaining.head * accumulator)
+//    }
+//    factorialTailrec(n,0)
+//  }
 
 
 
