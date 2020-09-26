@@ -61,6 +61,7 @@ object AkkaRecap extends App {
   val someActor = system.actorOf(Props[SimpleActor], "SomeSimpleActor")
   future.mapTo[String].pipeTo(someActor)
 
+  
 
 
 }
